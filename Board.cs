@@ -464,7 +464,7 @@ namespace SeaBattle_Versoin2
                 }
                 if (!flag)
                 {
-                    Console.WriteLine("Победа!");
+                    Console.WriteLine("ИГРА ОКОНЧЕНА!");
                     break;
                 }
             }
