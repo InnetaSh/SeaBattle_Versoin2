@@ -48,6 +48,8 @@ namespace SeaBattle_Versoin2
                         Console.Write('x');
                     else if (board[i, j] == 'O')
                         Console.Write('O');
+                    else if (board[i, j] == 'V')
+                        Console.Write('V');
                     else if (board[i, j] == '-')
                         Console.Write('-');
                     else
@@ -64,6 +66,8 @@ namespace SeaBattle_Versoin2
                         Console.Write('x');
                     else if (board[i, j] == 'O')
                         Console.Write('O');
+                    else if (board[i, j] == 'V')
+                        Console.Write('V');
                     else if (board[i, j] == '-')
                         Console.Write('-');
                     else
@@ -192,11 +196,11 @@ namespace SeaBattle_Versoin2
 
         private void DeckersShips(int x, int y, int shipSize,int kol)
         {
+            var msg = String.Empty;
             for (int i = 0; i < kol; i++)
             {
                 try
                 {
-                    var msg = "";
                     if (!isHorizontal)
                     {
                         while (true)
@@ -326,7 +330,7 @@ namespace SeaBattle_Versoin2
             BoardPrint();
         }
 
-        public void Shot()
+        public void AIShot()
         {
             Random rnd = new Random();
 
@@ -425,6 +429,40 @@ namespace SeaBattle_Versoin2
             }
         }
 
+        public void MyShot()
+        {
+            Console.Clear();
+            BoardPrint();
+            Console.WriteLine("Введите координату X для выстрела:");
+            int ShotStartX;
+            while (!Int32.TryParse(Console.ReadLine(), out ShotStartX) || ShotStartX < 0 || ShotStartX > 10)
+            {
+                Console.WriteLine("Некоректный ввод.Введите координату X для выстрела:");
+            }
+            ShotStartX -= 1;
+            Console.WriteLine("Введите координату Y для выстрела:");
+            int ShotStartY;
+            while (!Int32.TryParse(Console.ReadLine(), out ShotStartY) || ShotStartY < 0 || ShotStartY > 10)
+            {
+                Console.WriteLine("Некоректный ввод.Введите координату Y для выстрела:");
+            }
+            ShotStartY -= 1;
+            if (board[ShotStartX, ShotStartY] == 'X')
+            {
+                board[ShotStartX, ShotStartY] = 'V';
+                Console.WriteLine($"Вы попали в корабль.");
+                Thread.Sleep(1000);
+                MyShot();
+            }
+            else
+            {
+                board[ShotStartX, ShotStartY] = '-';
+                Console.WriteLine("Вы промахнулись.");
+                Thread.Sleep(1000);
+                Console.Clear();
+            }
+        }
+
         public void Game()
         {
             Thread.Sleep(5000);
@@ -447,7 +485,7 @@ namespace SeaBattle_Versoin2
             Console.Clear();
             while (true)
             {
-                Shot();
+                AIShot();
                 bool flag = false;
                 for(var i = 0; i < Size; i++)
                 {
@@ -467,6 +505,7 @@ namespace SeaBattle_Versoin2
                     Console.WriteLine("ИГРА ОКОНЧЕНА!");
                     break;
                 }
+                MyShot();
             }
         }
     }
