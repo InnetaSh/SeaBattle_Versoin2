@@ -10,8 +10,8 @@ namespace SeaBattle_Versoin2
 {
     internal class Board
     {
-        private int Size;
-        private char[,] board;
+        public int Size;
+        public char[,] board;
 
         private bool SingleDeckerFlag = false;
         private bool DoubleDeckerFlag = false;
@@ -31,13 +31,15 @@ namespace SeaBattle_Versoin2
             {
                 for (int j = 0; j < Size; j++)
                 {
-                    board[i, j] = '-';
+                    board[i, j] = ' ';
                 }
             }
         }
 
-        private void BoardPrint()
+        private void BoardPrint(string str)
         {
+            Console.WriteLine($"   {str}");
+            Console.WriteLine("-------------------");
             Console.WriteLine("   12345678910");
             for (int i = 0; i < Size - 1; i++)
             {
@@ -77,6 +79,33 @@ namespace SeaBattle_Versoin2
             }
         }
 
+        void VvodCoordinates(int i, out int x, out int y, string Decker)
+        {
+            Console.WriteLine($"Введите координату X {i + 1}-го {Decker} корабля:"); ;
+            if (!int.TryParse(Console.ReadLine(), out x))
+            {
+                throw new Exception("Введенная строка не является числом.");
+            }
+            else x -= 1;
+            Console.WriteLine($"Введите координату Y {i + 1}-го {Decker} корабля:"); ;
+            if (!int.TryParse(Console.ReadLine(), out y))
+            {
+                throw new Exception("Введенная строка не является числом.");
+            }
+            else y -= 1;
+        }
+
+        bool Direction()
+        {
+            Console.WriteLine("Выберите расположение корабля (вертикальное - v, горизонтальное - h):");
+            var direction = Console.ReadLine();
+            while (!(direction == "v" || direction == "h"))
+            {
+                Console.WriteLine("Не верный ввод.Введите расположение корабля (вертикальное - v, горизонтальное - h):");
+                direction = Console.ReadLine();
+            }
+            return direction == "h";
+        }
 
         private void IsOccupiedCellsVer(int x, int y, int countDecker)
         {
@@ -157,44 +186,75 @@ namespace SeaBattle_Versoin2
             return true;
         }
 
-        private void SingleDeckShips(int x, int y, int shipSize, int kol)
+        private void AISingleDeckShips(int x, int y, int shipSize, int kol)
         {
            SingleDeckerFlag = true;
 
-                DeckersShips(x, y, shipSize,kol);
+            AIDeckersShips(x, y, shipSize,kol);
             
         }
 
-        private void DoubleDeckerShips(int x, int y, int shipSize, int kol)
+        private void AIDoubleDeckerShips(int x, int y, int shipSize, int kol)
         {
           
             DoubleDeckerFlag = true;
 
-                DeckersShips(x, y, shipSize,kol);
+            AIDeckersShips(x, y, shipSize,kol);
             
 
         }
 
-        private void ThreeDeckerShips(int x, int y, int shipSize, int kol)
+        private void AIThreeDeckerShips(int x, int y, int shipSize, int kol)
         {
             ThreeDeckerFlag = true;
-
-          
-                   DeckersShips(x, y, shipSize,kol);
+            AIDeckersShips(x, y, shipSize,kol);
             
-
         }
 
-        private void FourDeckerShips(int x, int y, int shipSize, int kol)
+        private void AIFourDeckerShips(int x, int y, int shipSize, int kol)
         {
 
             FourDeckerFlag = true;
-            DeckersShips(x, y, shipSize, kol);
+            AIDeckersShips(x, y, shipSize, kol);
         }
 
 
 
-        private void DeckersShips(int x, int y, int shipSize,int kol)
+        private void MySingleDeckShips(int shipSize, int kol)
+        {
+            SingleDeckerFlag = true;
+
+            MyDeckersShips(shipSize, kol);
+
+        }
+
+        private void MyDoubleDeckerShips(int shipSize, int kol)
+        {
+
+            DoubleDeckerFlag = true;
+
+            MyDeckersShips(shipSize, kol);
+
+
+        }
+
+        private void MyThreeDeckerShips( int shipSize, int kol)
+        {
+            ThreeDeckerFlag = true;
+            MyDeckersShips(shipSize, kol);
+
+        }
+
+        private void MyFourDeckerShips( int shipSize, int kol)
+        {
+
+            FourDeckerFlag = true;
+            MyDeckersShips(shipSize, kol);
+        }
+
+
+
+        private void AIDeckersShips(int x, int y, int shipSize,int kol)
         {
             var msg = String.Empty;
             for (int i = 0; i < kol; i++)
@@ -259,8 +319,66 @@ namespace SeaBattle_Versoin2
                 }
             }
         }
+        private List<string> checkCells = new List<string>();
+        void MyDeckersShips(int shipSize, int kol)
+        {
+            for (int i = 0; i < kol; i++)
+            {
+                int startX;
+                int startY;
 
-        private List<string>checkCells = new List<string>();
+                try
+                {
+                    VvodCoordinates(i, out startX, out startY, $"{shipSize} -палубного");
+                    
+                    if (shipSize == 1)
+                        isHorizontal = true;
+                    else
+                        isHorizontal = Direction();
+                    var msg = "";
+                    if (!isHorizontal)
+                    {
+                        if (IsValidPlaceVer(startX, startY, shipSize, out msg))
+                        {
+                            for (int k = startX; k < startX + shipSize; k++)
+                            {
+                                board[k, startY] = 'X';
+                            }
+                            IsOccupiedCellsVer(startX, startY, shipSize);
+                        }
+                        else
+                        {
+                            throw new Exception(msg);
+                        }
+                    }
+                    else if (isHorizontal)
+                    {
+                        if (IsValidPlaceHor(startX, startY, shipSize, out msg))
+                        {
+                            for (int k = startY; k < startY + shipSize; k++)
+                            {
+                                board[startX, k] = 'X';
+                            }
+                            IsOccupiedCellsHor(startX, startY, shipSize);
+                        }
+                        else
+                        {
+                            throw new Exception(msg);
+                        }
+                    }
+                    Console.Clear();
+                    BoardPrint("Ваше поле.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    i--;
+                }
+            }
+
+        }
+
+        
         
 
         private void GetCoord(string str, out int x, out int y)
@@ -279,7 +397,7 @@ namespace SeaBattle_Versoin2
                 for (var y = 0; y < Size; y++)
                     board[i, y] = '-';
         }
-        public void GenerateShips()
+        public void AIGenerateShips()
         {
             Random rnd = new Random();
             checkCells.Clear();
@@ -296,7 +414,7 @@ namespace SeaBattle_Versoin2
 
                 if (ShipSize == 1 && !SingleDeckerFlag)
                 {
-                    SingleDeckShips(startX, startY, ShipSize, 4);
+                    AISingleDeckShips(startX, startY, ShipSize, 4);
                     if (checkCells.Count > 100)
                     {
                         clear();
@@ -304,7 +422,7 @@ namespace SeaBattle_Versoin2
                 }
                 if (ShipSize == 2 && !DoubleDeckerFlag)
                 {
-                    DoubleDeckerShips(startX, startY, ShipSize, 3);
+                    AIDoubleDeckerShips(startX, startY, ShipSize, 3);
                     if (checkCells.Count > 100)
                     {
                         clear();
@@ -312,7 +430,7 @@ namespace SeaBattle_Versoin2
                 }
                 if (ShipSize == 3 && !ThreeDeckerFlag)
                 {
-                    ThreeDeckerShips(startX, startY, ShipSize, 2);
+                    AIThreeDeckerShips(startX, startY, ShipSize, 2);
                     if (checkCells.Count > 100)
                     {
                         clear();
@@ -320,28 +438,156 @@ namespace SeaBattle_Versoin2
                 }
                 if (ShipSize == 4 && !FourDeckerFlag)
                 {
-                    FourDeckerShips(startX, startY, ShipSize,1);
+                    AIFourDeckerShips(startX, startY, ShipSize,1);
                     if (checkCells.Count > 100)
                     {
                         clear();
                     }
                 }
             }
-            BoardPrint();
+            BoardPrint("Поле соперника.");
         }
 
-        public void AIShot()
+        public void MyGenerateShips()
+        {
+            InitializeBoard();
+            BoardPrint("Ваше поле.");
+
+            while (!SingleDeckerFlag || !DoubleDeckerFlag || !ThreeDeckerFlag || !FourDeckerFlag)
+            {
+                Console.Clear();
+                BoardPrint("Ваше поле.");
+                Thread.Sleep(1000);
+                if (SingleDeckerFlag && DoubleDeckerFlag && ThreeDeckerFlag)
+                {
+                    Console.WriteLine("Выберете палубность корабля, которые хотите расставить (4):");
+                }
+                else if (SingleDeckerFlag && DoubleDeckerFlag && FourDeckerFlag)
+                {
+                    Console.WriteLine("Выберете палубность корабля, которые хотите расставить (3):");
+                }
+                else if (SingleDeckerFlag && ThreeDeckerFlag && FourDeckerFlag)
+                {
+                    Console.WriteLine("Выберете палубность корабля, которые хотите расставить (2):");
+                }
+                else if (DoubleDeckerFlag && ThreeDeckerFlag && FourDeckerFlag)
+                {
+                    Console.WriteLine("Выберете палубность корабля, которые хотите расставить (1):");
+                }
+                else if (SingleDeckerFlag && DoubleDeckerFlag)
+                {
+                    Console.WriteLine("Выберете палубность корабля, которые хотите расставить (3, 4):");
+                }
+                else if (SingleDeckerFlag && ThreeDeckerFlag)
+                {
+                    Console.WriteLine("Выберете палубность корабля, которые хотите расставить (2, 4):");
+                }
+                else if (SingleDeckerFlag && FourDeckerFlag)
+                {
+                    Console.WriteLine("Выберете палубность корабля, которые хотите расставить (2, 3):");
+                }
+                else if (DoubleDeckerFlag && ThreeDeckerFlag)
+                {
+                    Console.WriteLine("Выберете палубность корабля, которые хотите расставить (1, 4):");
+                }
+                else if (DoubleDeckerFlag && FourDeckerFlag)
+                {
+                    Console.WriteLine("Выберете палубность корабля, которые хотите расставить (1, 3):");
+                }
+                else if (ThreeDeckerFlag && FourDeckerFlag)
+                {
+                    Console.WriteLine("Выберете палубность корабля, которые хотите расставить (1, 2):");
+                }
+                else if (SingleDeckerFlag)
+                {
+                    Console.WriteLine("Выберете палубность корабля, которые хотите расставить (2, 3, 4):");
+                }
+                else if (DoubleDeckerFlag)
+                {
+                    Console.WriteLine("Выберете палубность корабля, которые хотите расставить (1, 3, 4):");
+                }
+                else if (ThreeDeckerFlag)
+                {
+                    Console.WriteLine("Выберете палубность корабля, которые хотите расставить (1, 2, 4):");
+                }
+                else if (FourDeckerFlag)
+                {
+                    Console.WriteLine("Выберете палубность корабля, которые хотите расставить (1, 2, 3):");
+                }
+
+                else
+                {
+                    Console.WriteLine("Выберете палубность корабля, которые хотите расставить (1 - 4):");
+                    Console.WriteLine("однопалубный корабль - 4шт.");
+                    Console.WriteLine("двухпалубный корабль - 3шт.");
+                    Console.WriteLine("трехпалубный корабль - 2шт.");
+                    Console.WriteLine("четырехпалубный корабль - 1шт.");
+                }
+
+                int count;
+                Console.Write("count = ");
+                while (!Int32.TryParse(Console.ReadLine(), out count) || count < 1 || count > 4)
+                {
+                    Console.WriteLine("Не верный ввод.Введите число:");
+                    Console.Write("count = ");
+                }
+                
+                switch (count)
+                {
+                    case 1:
+                        if (!SingleDeckerFlag)
+                        {
+                            MySingleDeckShips( 1, 4);
+                        }
+                        else
+                            Console.WriteLine("Такой корабль уже расставлен.");
+                        break;
+                    case 2:
+                        if (!DoubleDeckerFlag)
+                        {
+                            
+                            MyDoubleDeckerShips( 2, 3);
+                        }
+                        else
+                            Console.WriteLine("Такой корабль уже расставлен.");
+                        break;
+                    case 3:
+                        if (!ThreeDeckerFlag)
+                        {
+                            MyThreeDeckerShips( 3, 2);
+                        }
+                        else
+                            Console.WriteLine("Такой корабль уже расставлен.");
+                        break;
+                    case 4:
+                        if (!FourDeckerFlag)
+                        {
+                            MyFourDeckerShips( 4, 1);
+                        }
+                        else
+                            Console.WriteLine("Такой корабль уже расставлен.");
+                        break;
+                }
+                BoardPrint("Ваше поле.");
+            }
+            Console.Clear();
+        }
+
+
+        public void AIShot(Board obj)
         {
             Random rnd = new Random();
 
             int ShotStartX = rnd.Next(0, Size);
             int ShotStartY = rnd.Next(0, Size);
             int CountDoker = 0;
-            if (board[ShotStartX, ShotStartY] == 'X')
+            if (obj.board[ShotStartX, ShotStartY] == 'X')
             {
                 CountDoker++;
-                board[ShotStartX, ShotStartY] = 'O';
-                BoardPrint();
+                obj.board[ShotStartX, ShotStartY] = 'O';
+                obj.BoardPrint("Ваше поле.");
+                Console.WriteLine("\n--------------------------------------------\n");
+                BoardPrint("Поле соперника.");
                 Thread.Sleep(1000);
 
 
@@ -349,14 +595,16 @@ namespace SeaBattle_Versoin2
                 {
                     if (k >= Size)
                         break;
-                    if (board[k, ShotStartY] == '1')
+                    if (obj.board[k, ShotStartY] == '1')
                         break;
-                    else if (board[k, ShotStartY] == 'X')
+                    else if (obj.board[k, ShotStartY] == 'X')
                     {
-                        board[k, ShotStartY] = 'O';
+                        obj.board[k, ShotStartY] = 'O';
                         CountDoker++;
                         Console.Clear();
-                        BoardPrint();
+                        obj.BoardPrint("Ваше поле.");
+                        Console.WriteLine("\n--------------------------------------------\n");
+                        BoardPrint("Поле соперника.");
                         Thread.Sleep(1000);
                     }
                 }
@@ -366,14 +614,16 @@ namespace SeaBattle_Versoin2
                     {
                         if (k >= Size || k<0)
                             break;
-                        if (board[k, ShotStartY] == '1')
+                        if (obj.board[k, ShotStartY] == '1')
                             break;
-                        else if (board[k, ShotStartY] == 'X')
+                        else if (obj.board[k, ShotStartY] == 'X')
                         {
-                            board[k, ShotStartY] = 'O';
+                            obj.board[k, ShotStartY] = 'O';
                             CountDoker++;
                             Console.Clear();
-                            BoardPrint();
+                            obj.BoardPrint("Ваше поле.");
+                            Console.WriteLine("\n--------------------------------------------\n");
+                            BoardPrint("Поле соперника.");
                             Thread.Sleep(1000);
                         }
                     }
@@ -384,14 +634,16 @@ namespace SeaBattle_Versoin2
                     {
                         if (k >= Size)
                             break;
-                        if (board[ShotStartX, k] == '1')
+                        if (obj.board[ShotStartX, k] == '1')
                             break;
-                        else if (board[ShotStartX, k] == 'X')
+                        else if (obj.board[ShotStartX, k] == 'X')
                         {
-                            board[ShotStartX, k] = 'O';
+                            obj.board[ShotStartX, k] = 'O';
                             CountDoker++;
                             Console.Clear();
-                            BoardPrint();
+                            obj.BoardPrint("Ваше поле.");
+                            Console.WriteLine("\n--------------------------------------------\n");
+                            BoardPrint("Поле соперника.");
                             Thread.Sleep(1000);
                         }
                     }
@@ -402,37 +654,47 @@ namespace SeaBattle_Versoin2
                     {
                         if (k >= Size || k < 0)
                             break;
-                        if (board[ShotStartX, k] == '1')
+                        if (obj.board[ShotStartX, k] == '1')
                             break;
-                        else if (board[ShotStartX, k] == 'X')
+                        else if (obj.board[ShotStartX, k] == 'X')
                         {
-                            board[ShotStartX, k] = 'O';
+                            obj.board[ShotStartX, k] = 'O';
                             CountDoker++;
                             Console.Clear();
-                            BoardPrint();
+                            obj.BoardPrint("Ваше поле.");
+                            Console.WriteLine("\n--------------------------------------------\n");
+                            BoardPrint("Поле соперника.");
                             Thread.Sleep(2000);
 
                         }
                     }
                 }
-                Console.WriteLine($"подбит {CountDoker}-палубный корабль");
+                Console.Clear();
+                obj.BoardPrint("Ваше поле.");
+                Console.WriteLine($"подбит Ваш {CountDoker}-палубный корабль");
+                Console.WriteLine("\n--------------------------------------------\n");
+                BoardPrint("Поле соперника.");
                 Thread.Sleep(5000);
                 Console.Clear();
             }
             else
             {
-                board[ShotStartX, ShotStartY] = '-';
-                BoardPrint();
-                Console.WriteLine("мимо");
-                Thread.Sleep(500);
+                obj.board[ShotStartX, ShotStartY] = '-';
+                obj.BoardPrint("Ваше поле.");
+                Console.WriteLine("МИМО!");
+                Console.WriteLine("\n--------------------------------------------\n");
+                BoardPrint("Поле соперника.");
+                Thread.Sleep(1000);
                 Console.Clear();
             }
         }
 
-        public void MyShot()
+        public void MyShot(Board obj)
         {
             Console.Clear();
-            BoardPrint();
+            BoardPrint("Ваше поле.");
+            Console.WriteLine("\n--------------------------------------------\n");
+            obj.BoardPrint("Поле соперника.");
             Console.WriteLine("Введите координату X для выстрела:");
             int ShotStartX;
             while (!Int32.TryParse(Console.ReadLine(), out ShotStartX) || ShotStartX < 0 || ShotStartX > 10)
@@ -447,66 +709,21 @@ namespace SeaBattle_Versoin2
                 Console.WriteLine("Некоректный ввод.Введите координату Y для выстрела:");
             }
             ShotStartY -= 1;
-            if (board[ShotStartX, ShotStartY] == 'X')
+            if (obj.board[ShotStartX, ShotStartY] == 'X')
             {
-                board[ShotStartX, ShotStartY] = 'V';
+                obj.board[ShotStartX, ShotStartY] = 'O';
                 Console.WriteLine($"Вы попали в корабль.");
                 Thread.Sleep(1000);
-                MyShot();
+                MyShot(obj);
             }
             else
             {
-                board[ShotStartX, ShotStartY] = '-';
+                obj.board[ShotStartX, ShotStartY] = '-';
                 Console.WriteLine("Вы промахнулись.");
                 Thread.Sleep(1000);
                 Console.Clear();
             }
         }
 
-        public void Game()
-        {
-            Thread.Sleep(5000);
-            Console.Clear();
-            Console.WriteLine();
-            Console.WriteLine("         ИГРА НАЧАТА!");
-            Thread.Sleep(500);
-            Console.Clear();
-            Console.WriteLine();
-            Console.WriteLine("             3");
-            Thread.Sleep(300);
-            Console.Clear();
-            Console.WriteLine();
-            Console.WriteLine("             2");
-            Thread.Sleep(300);
-            Console.Clear();
-            Console.WriteLine();
-            Console.WriteLine("             1");
-            Thread.Sleep(300);
-            Console.Clear();
-            while (true)
-            {
-                AIShot();
-                bool flag = false;
-                for(var i = 0; i < Size; i++)
-                {
-                    for (var j = 0; j < Size; j++)
-                    {
-                        if (board[i, j] == 'X')
-                        {
-                            flag = true;
-                            break;
-                        }
-                    }
-                    if (flag)
-                        break;
-                }
-                if (!flag)
-                {
-                    Console.WriteLine("ИГРА ОКОНЧЕНА!");
-                    break;
-                }
-                MyShot();
-            }
-        }
     }
 }
